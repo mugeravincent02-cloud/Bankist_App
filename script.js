@@ -46,20 +46,20 @@ const labelTime = document.querySelector('.timmer');
 const containerApp = document.querySelector('.app');
 const containerMovements = document.querySelector('.movements');
 
-const btnLogin = document.querySelector('.login_btn');
+const btnLogin = document.querySelector('.login__btn');
 
-const btnTransfer = document.querySelector('.form_btn--transfer');
-const btnLoaon = document.querySelector('.form_btn--loan');
-const btnClose = document.querySelector('.form_btn--close');
+const btnTransfer = document.querySelector('.form__btn--transfer');
+const btnLoaon = document.querySelector('.form__btn--loan');
+const btnClose = document.querySelector('.form__btn--close');
 const btnSort = document.querySelector('.btn--sort');
 
-const inputLoginUsername = document.querySelector('.login_input--user');
-const inputLoginPin = document.querySelector('.login_input--pin');
-const inputTransferTo = document.querySelector('.form_input--to');
-const inputTransferAmount = document.querySelector('.form_input--amount');
-const inputLoanAmount = document.querySelector('.form_input--loan-amount');
-const inputCloseUsername = document.querySelector('.form_input--user');
-const inputClosePin = document.querySelector('.form_input--pin');
+const inputLoginUsername = document.querySelector('.login__input--user');
+const inputLoginPin = document.querySelector('.login__input--pin');
+const inputTransferTo = document.querySelector('.form__input--to');
+const inputTransferAmount = document.querySelector('.form__input--amount');
+const inputLoanAmount = document.querySelector('.form__input--loan-amount');
+const inputCloseUsername = document.querySelector('.form__input--user');
+const inputClosePin = document.querySelector('.form__input--pin');
 
 const displayMovements = function (movements) {
   containerMovements.innerHTML = '';
@@ -78,35 +78,32 @@ const displayMovements = function (movements) {
     containerMovements.insertAdjacentHTML('afterbegin', html);
   });
 };
-displayMovements(account1.movements);
 
 const calcDisplayBalance = function (movements) {
   const balance = movements.reduce((acc, mov) => acc + mov, 0);
   labelBalance.textContent = `${balance} €`;
 };
-calcDisplayBalance(account1.movements);
 
-const calcDisplaySummary = function (movements) {
-  const incomes = movements
+const calcDisplaySummary = function (acc) {
+  const incomes = acc.movements
     .filter(mov => mov > 0)
     .reduce((acc, mov) => acc + mov, 0);
 
   labelSumIn.textContent = `${incomes} €`;
 
-  const outs = movements
+  const outs = acc.movements
     .filter(mov => mov < 0)
     .reduce((acc, mov, i, arr) => acc + mov, 0);
 
   labelSumOut.textContent = `${Math.abs(outs)} €`;
 
-  const interest = movements
+  const interest = acc.movements
     .filter(mov => mov > 0)
-    .map(deposit => (deposit * 1.2) / 100)
+    .map(deposit => (deposit * acc.interestRate) / 100)
     .reduce((acc, int) => acc + int, 0);
 
   labelSumInterest.textContent = `${interest} €`;
 };
-calcDisplaySummary(account1.movements);
 
 // Adding an element in the accounts which is the short form of their names.
 const createShortForm = function (accs) {
@@ -120,6 +117,38 @@ const createShortForm = function (accs) {
 };
 
 createShortForm(accounts);
+
+// Implementing the login
+let currentAccount;
+btnLogin.addEventListener('click', function (e) {
+  //Prevent form from submitting
+  e.preventDefault();
+
+  currentAccount = accounts.find(
+    acc => acc.username === inputLoginUsername.value
+  );
+  console.log(currentAccount);
+
+  if (currentAccount?.pin === Number(inputLoginPin.value)) {
+    //Display welcome message
+    labelWelcome.textContent = `Welcome back ${
+      currentAccount.owner.split(' ')[0]
+    }`;
+    containerApp.style.opacity = 100;
+
+    inputLoginUsername.value = inputLoginPin.value = '';
+    inputLoginPin.blur();
+
+    //Display movements
+    displayMovements(currentAccount.movements);
+
+    //Display balance
+    calcDisplayBalance(currentAccount.movements);
+
+    //Display summary
+    calcDisplaySummary(currentAccount);
+  }
+});
 
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
@@ -260,3 +289,25 @@ createShortForm(accounts);
 //   .reduce((acc, mov) => acc + mov, 0);
 
 // console.log(totalDepositUSD);
+
+///////////////////........FIND........./////////////////
+//The find method returns the first element in an array which satidfies a given condition
+//making it different from filter which returns a new array with all elements which
+//meat the defined condition
+
+// const firstWithdrawal = movements.find(mov => mov < 0);
+// console.log(movements);
+// console.log(firstWithdrawal);
+
+// console.log(accounts);
+// const givenAccount = accounts.find(acc => acc.owner === 'Jessica Birunji');
+// console.log(givenAccount);
+
+// const findAccount = function () {
+//   for (const acc of accounts) {
+//     if (acc.owner === 'Jessica Birunji') {
+//       console.log(acc);
+//     }
+//   }
+// };
+// findAccount();
