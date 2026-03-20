@@ -38,9 +38,9 @@ const accounts = [account1, account2, account3, account4];
 const labelWelcome = document.querySelector('.welcome');
 const labelDate = document.querySelector('.date');
 const labelBalance = document.querySelector('.balance__value');
-const labelSumIn = document.querySelector('.summary_value--in');
-const labelSumOut = document.querySelector('.summary_value--out');
-const labelSumInterest = document.querySelector('.summary_value--interest');
+const labelSumIn = document.querySelector('.summary__value--in');
+const labelSumOut = document.querySelector('.summary__value--out');
+const labelSumInterest = document.querySelector('.summary__value--interest');
 const labelTime = document.querySelector('.timmer');
 
 const containerApp = document.querySelector('.app');
@@ -73,7 +73,7 @@ const displayMovements = function (movements) {
         <div class="movements__type movements__type--${type}">${
       i + 1
     } ${type}</div>
-        <div class="movements__value">${mov}</div>
+        <div class="movements__value">${mov} €</div>
     `;
     containerMovements.insertAdjacentHTML('afterbegin', html);
   });
@@ -82,9 +82,31 @@ displayMovements(account1.movements);
 
 const calcDisplayBalance = function (movements) {
   const balance = movements.reduce((acc, mov) => acc + mov, 0);
-  labelBalance.textContent = `${balance} EUR`;
+  labelBalance.textContent = `${balance} €`;
 };
 calcDisplayBalance(account1.movements);
+
+const calcDisplaySummary = function (movements) {
+  const incomes = movements
+    .filter(mov => mov > 0)
+    .reduce((acc, mov) => acc + mov, 0);
+
+  labelSumIn.textContent = `${incomes} €`;
+
+  const outs = movements
+    .filter(mov => mov < 0)
+    .reduce((acc, mov, i, arr) => acc + mov, 0);
+
+  labelSumOut.textContent = `${Math.abs(outs)} €`;
+
+  const interest = movements
+    .filter(mov => mov > 0)
+    .map(deposit => (deposit * 1.2) / 100)
+    .reduce((acc, int) => acc + int, 0);
+
+  labelSumInterest.textContent = `${interest} €`;
+};
+calcDisplaySummary(account1.movements);
 
 // Adding an element in the accounts which is the short form of their names.
 const createShortForm = function (accs) {
@@ -199,6 +221,7 @@ createShortForm(accounts);
 // const movUSD = movements.map(mov => 2 * eurToUSD);
 // console.log(movUSD);
 
+//The filter returns an array of the values that meet a defined condition
 // const witd = movements.filter(mov => mov < 0);
 // console.log(witd);
 
@@ -214,3 +237,26 @@ createShortForm(accounts);
 ///////////////////........OR........./////////////////
 // const balance5 = movements.reduce((accum, curVal) => accum + curVal);
 // console.log(balance5);
+
+// const julia = [3, 5, 2, 12, 7];
+// const kate = [4, 1, 15, 8, 3];
+
+// //Create a function that accepts an array of dog ages
+// const calcAverageHumanAge = function (dogAge) {
+//   // Calculate the dog age in human years
+//   const humanAge = dogAge.map(dogAge =>
+//     dogAge <= 2 ? 2 * dogAge : 16 + dogAge * 4
+//   );
+//   console.log(humanAge);
+// };
+// calcAverageHumanAge(julia);
+
+// const eurToUSD = 1.1;
+// console.log(movements);
+
+// const totalDepositUSD = movements
+//   .filter(mov => mov > 0)
+//   .map(mov => mov * eurToUSD)
+//   .reduce((acc, mov) => acc + mov, 0);
+
+// console.log(totalDepositUSD);
