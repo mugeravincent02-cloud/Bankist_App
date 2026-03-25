@@ -17,6 +17,8 @@ const account1 = {
     '2026-03-24T22:15:33.735Z',
     '2026-03-25T12:01:36.0894Z',
   ],
+  locale: 'en-US',
+  currency: 'USD',
   interestRate: 1.2, //%
   pin: 1111,
 };
@@ -34,6 +36,8 @@ const account2 = {
     '2020-06-08T13:15:33.035Z',
     '2020-07-26T12:01:20.0894Z',
   ],
+  locale: 'de-DE',
+  currency: 'EURO',
   interestRate: 1.5, //%
   pin: 2222,
 };
@@ -41,6 +45,18 @@ const account2 = {
 const account3 = {
   owner: 'Steven Kakooza Williams',
   movements: [200, -200, 340, -300, -20, 50, 400, -4600],
+  movementsDates: [
+    '2025-11-01T21:13:33.235Z',
+    '2025-12-30T09:42:16.867Z',
+    '2026-01-25T06:04:33.904Z',
+    '2026-02-01T06:15:24.335Z',
+    '2026-02-14T03:13:43.185Z',
+    '2026-03-18T23:10:17.435Z',
+    '2026-03-24T22:15:33.735Z',
+    '2026-03-25T12:01:36.0894Z',
+  ],
+  locale: 'en-US',
+  currency: 'USD',
   interestRate: 0.7, //%
   pin: 3333,
 };
@@ -48,6 +64,18 @@ const account3 = {
 const account4 = {
   owner: 'Sarah Smith',
   movements: [430, 1000, 700, 500, 90],
+  movementsDates: [
+    '2019-11-01T13:15:33.035Z',
+    '2019-11-30T09:48:16.867Z',
+    '2019-12-25T06:04:23.907Z',
+    '2020-01-01T13:15:33.035Z',
+    '2020-02-01T03:13:53.835Z',
+    '2020-04-21T23:10:31.435Z',
+    '2020-06-08T13:15:33.035Z',
+    '2020-07-26T12:01:20.0894Z',
+  ],
+  locale: 'de-DE',
+  currency: 'EURO',
   interestRate: 1, //%
   pin: 4444,
 };
@@ -81,7 +109,7 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
-const formatMovementDates = function (date) {
+const formatMovementDates = function (date, locale) {
   const calcDaysPassed = (date1, date2) =>
     Math.round(Math.abs(date2 - date1) / (1000 * 60 * 60 * 24));
 
@@ -94,12 +122,15 @@ const formatMovementDates = function (date) {
   }
   if (daysPassed <= 7) {
     return `${daysPassed} days ago`;
-  } else {
-    const day = `${date.getDate()}`.padStart(2, 0);
-    const month = `${date.getMonth()}`.padStart(2, 0);
-    const year = date.getFullYear();
-    return `${day}/ ${month}/ ${year}`;
   }
+  // else {
+  //   const day = `${date.getDate()}`.padStart(2, 0);
+  //   const month = `${date.getMonth()}`.padStart(2, 0);
+  //   const year = date.getFullYear();
+  //   return `${day}/ ${month}/ ${year}`;
+  // }
+
+  return new Intl.DateTimeFormat(locale).format(date);
 };
 
 const displayMovements = function (acc, sort = false) {
@@ -113,7 +144,7 @@ const displayMovements = function (acc, sort = false) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
 
     const date = new Date(acc.movementsDates[i]);
-    const displayDate = formatMovementDates(date);
+    const displayDate = formatMovementDates(date, acc.locale);
 
     const html = `
       <div class="movements__row">
@@ -197,14 +228,30 @@ btnLogin.addEventListener('click', function (e) {
     containerApp.style.opacity = 100;
 
     //Activating and adding dates
-    const now = new Date();
-    const day = `${now.getDate()}`.padStart(2, 0);
-    const month = `${now.getMonth()}`.padStart(2, 0);
-    const year = `${now.getFullYear()}`;
-    const hour = `${now.getHours()}`.padStart(2, 0);
-    const min = `${now.getMinutes()}`.padStart(2, 0);
+    //Experimenting the INTL API for dates specifically
 
-    labelDate.textContent = `${day}/ ${month}/ ${year}, ${hour}:${min}`;
+    const now = new Date();
+
+    const options = {
+      hour: 'numeric',
+      minute: 'numeric',
+      day: 'numeric',
+      month: 'numeric',
+      year: 'numeric',
+      // weekday: 'long',
+    };
+    // const locale = navigator.language;  //GETS DATE FROM BROWSER
+    labelDate.textContent = new Intl.DateTimeFormat(
+      currentAccount.locale,
+      options
+    ).format(now);
+    // const day = `${now.getDate()}`.padStart(2, 0);
+    // const month = `${now.getMonth()}`.padStart(2, 0);
+    // const year = `${now.getFullYear()}`;
+    // const hour = `${now.getHours()}`.padStart(2, 0);
+    // const min = `${now.getMinutes()}`.padStart(2, 0);
+
+    // labelDate.textContent = `${day}/ ${month}/ ${year}, ${hour}:${min}`;
 
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
