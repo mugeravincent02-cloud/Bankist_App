@@ -8,14 +8,14 @@ const account1 = {
   owner: 'Mugera Vincent',
   movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
   movementsDates: [
-    '2019-11-01T21:13:33.235Z',
-    '2019-12-30T09:42:16.867Z',
-    '2020-01-25T06:04:33.904Z',
-    '2020-04-01T06:15:24.335Z',
-    '2020-05-01T03:13:43.185Z',
-    '2020-05-27T23:10:17.435Z',
-    '2020-07-08T22:15:33.735Z',
-    '2020-07-26T12:01:36.0894Z',
+    '2025-11-01T21:13:33.235Z',
+    '2025-12-30T09:42:16.867Z',
+    '2026-01-25T06:04:33.904Z',
+    '2026-02-01T06:15:24.335Z',
+    '2026-02-14T03:13:43.185Z',
+    '2026-03-18T23:10:17.435Z',
+    '2026-03-24T22:15:33.735Z',
+    '2026-03-25T12:01:36.0894Z',
   ],
   interestRate: 1.2, //%
   pin: 1111,
@@ -81,6 +81,27 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
+const formatMovementDates = function (date) {
+  const calcDaysPassed = (date1, date2) =>
+    Math.round(Math.abs(date2 - date1) / (1000 * 60 * 60 * 24));
+
+  const daysPassed = calcDaysPassed(new Date(), date);
+  if (daysPassed === 0) {
+    return 'Today';
+  }
+  if (daysPassed === 1) {
+    return 'Yesterday';
+  }
+  if (daysPassed <= 7) {
+    return `${daysPassed} days ago`;
+  } else {
+    const day = `${date.getDate()}`.padStart(2, 0);
+    const month = `${date.getMonth()}`.padStart(2, 0);
+    const year = date.getFullYear();
+    return `${day}/ ${month}/ ${year}`;
+  }
+};
+
 const displayMovements = function (acc, sort = false) {
   containerMovements.innerHTML = '';
 
@@ -92,10 +113,7 @@ const displayMovements = function (acc, sort = false) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
 
     const date = new Date(acc.movementsDates[i]);
-    const day = `${date.getDate()}`.padStart(2, 0);
-    const month = `${date.getMonth()}`.padStart(2, 0);
-    const year = date.getFullYear();
-    const displayDate = `${day}/ ${month}/ ${year}`;
+    const displayDate = formatMovementDates(date);
 
     const html = `
       <div class="movements__row">
