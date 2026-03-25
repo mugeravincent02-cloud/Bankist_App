@@ -7,6 +7,16 @@
 const account1 = {
   owner: 'Mugera Vincent',
   movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
+  movementsDates: [
+    '2019-11-01T21:13:33.235Z',
+    '2019-12-30T09:42:16.867Z',
+    '2020-01-25T06:04:33.904Z',
+    '2020-04-01T06:15:24.335Z',
+    '2020-05-01T03:13:43.185Z',
+    '2020-05-27T23:10:17.435Z',
+    '2020-07-08T22:15:33.735Z',
+    '2020-07-26T12:01:36.0894Z',
+  ],
   interestRate: 1.2, //%
   pin: 1111,
 };
@@ -14,6 +24,16 @@ const account1 = {
 const account2 = {
   owner: 'Jessica Birunji',
   movements: [5000, 3400, -150, -790, -3210, -1000, 85000, -30],
+  movementsDates: [
+    '2019-11-01T13:15:33.035Z',
+    '2019-11-30T09:48:16.867Z',
+    '2019-12-25T06:04:23.907Z',
+    '2020-01-01T13:15:33.035Z',
+    '2020-02-01T03:13:53.835Z',
+    '2020-04-21T23:10:31.435Z',
+    '2020-06-08T13:15:33.035Z',
+    '2020-07-26T12:01:20.0894Z',
+  ],
   interestRate: 1.5, //%
   pin: 2222,
 };
@@ -41,7 +61,7 @@ const labelBalance = document.querySelector('.balance__value');
 const labelSumIn = document.querySelector('.summary__value--in');
 const labelSumOut = document.querySelector('.summary__value--out');
 const labelSumInterest = document.querySelector('.summary__value--interest');
-const labelTime = document.querySelector('.timmer');
+const labelTimer = document.querySelector('.timmer');
 
 const containerApp = document.querySelector('.app');
 const containerMovements = document.querySelector('.movements');
@@ -49,7 +69,7 @@ const containerMovements = document.querySelector('.movements');
 const btnLogin = document.querySelector('.login__btn');
 
 const btnTransfer = document.querySelector('.form__btn--transfer');
-const btnLoaon = document.querySelector('.form__btn--loan');
+const btnLoan = document.querySelector('.form__btn--loan');
 const btnClose = document.querySelector('.form__btn--close');
 const btnSort = document.querySelector('.btn--sort');
 
@@ -61,11 +81,21 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
-const displayMovements = function (movements) {
+const displayMovements = function (acc, sort = false) {
   containerMovements.innerHTML = '';
 
-  movements.forEach(function (mov, i) {
+  const movs = sort
+    ? acc.movements.slice().sort((a, b) => a - b)
+    : acc.movements;
+
+  movs.forEach(function (mov, i) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
+
+    const date = new Date(acc.movementsDates[i]);
+    const day = `${date.getDate()}`.padStart(2, 0);
+    const month = `${date.getMonth()}`.padStart(2, 0);
+    const year = date.getFullYear();
+    const displayDate = `${day}/ ${month}/ ${year}`;
 
     const html = `
       <div class="movements__row">
@@ -73,7 +103,8 @@ const displayMovements = function (movements) {
         <div class="movements__type movements__type--${type}">${
       i + 1
     } ${type}</div>
-        <div class="movements__value">${mov} €</div>
+        <div class="movements__date">${displayDate}</div>
+        <div class="movements__value">${mov.toFixed(2)} €</div>
     `;
     containerMovements.insertAdjacentHTML('afterbegin', html);
   });
@@ -81,7 +112,7 @@ const displayMovements = function (movements) {
 
 const calcDisplayBalance = function (acc) {
   acc.balance = acc.movements.reduce((acc, mov) => acc + mov, 0);
-  labelBalance.textContent = `${acc.balance} €`;
+  labelBalance.textContent = `${acc.balance.toFixed(2)} €`;
 };
 
 const calcDisplaySummary = function (acc) {
@@ -89,13 +120,13 @@ const calcDisplaySummary = function (acc) {
     .filter(mov => mov > 0)
     .reduce((acc, mov) => acc + mov, 0);
 
-  labelSumIn.textContent = `${incomes} €`;
+  labelSumIn.textContent = `${incomes.toFixed(2)} €`;
 
   const outs = acc.movements
     .filter(mov => mov < 0)
     .reduce((acc, mov, i, arr) => acc + mov, 0);
 
-  labelSumOut.textContent = `${Math.abs(outs)} €`;
+  labelSumOut.textContent = `${Math.abs(outs).toFixed(2)} €`;
 
   const interest = acc.movements
     .filter(mov => mov > 0)
@@ -121,7 +152,7 @@ createShortForm(accounts);
 //UI Update
 const updateUI = function (acc) {
   //Display movements
-  displayMovements(acc.movements);
+  displayMovements(acc);
 
   //Display balance
   calcDisplayBalance(acc);
@@ -140,12 +171,22 @@ btnLogin.addEventListener('click', function (e) {
     acc => acc.username === inputLoginUsername.value
   );
 
-  if (currentAccount?.pin === Number(inputLoginPin.value)) {
+  if (currentAccount?.pin === +inputLoginPin.value) {
     //Display welcome message
     labelWelcome.textContent = `Welcome back ${
       currentAccount.owner.split(' ')[0]
     }`;
     containerApp.style.opacity = 100;
+
+    //Activating and adding dates
+    const now = new Date();
+    const day = `${now.getDate()}`.padStart(2, 0);
+    const month = `${now.getMonth()}`.padStart(2, 0);
+    const year = `${now.getFullYear()}`;
+    const hour = `${now.getHours()}`.padStart(2, 0);
+    const min = `${now.getMinutes()}`.padStart(2, 0);
+
+    labelDate.textContent = `${day}/ ${month}/ ${year}, ${hour}:${min}`;
 
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
@@ -158,7 +199,7 @@ btnLogin.addEventListener('click', function (e) {
 
 btnTransfer.addEventListener('click', function (e) {
   e.preventDefault();
-  const amount = Number(inputTransferAmount.value);
+  const amount = +inputTransferAmount.value;
   const receiveAcc = accounts.find(
     acc => acc.username === inputTransferTo.value
   );
@@ -174,9 +215,62 @@ btnTransfer.addEventListener('click', function (e) {
     currentAccount.movements.push(-amount);
     receiveAcc.movements.push(amount);
 
+    //Add transfer Date
+    currentAccount.movementsDates.push(new Date().toISOString());
+    receiveAcc.movementsDates.push(new Date().toISOString());
+
     //updating UI
     updateUI(currentAccount);
   }
+});
+
+//Requesting for a loan
+
+btnLoan.addEventListener('click', function (e) {
+  e.preventDefault();
+
+  const amount = Math.floor(inputLoanAmount.value);
+
+  if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
+    //Add to movements
+    currentAccount.movements.push(amount);
+
+    //Add Loan Date
+    currentAccount.movementsDates.push(new Date().toISOString());
+
+    updateUI(currentAccount);
+  }
+  inputLoanAmount.value = '';
+});
+
+//Closing an account
+btnClose.addEventListener('click', function (e) {
+  e.preventDefault();
+
+  if (
+    inputCloseUsername.value === currentAccount.username &&
+    Number(inputClosePin.value) === currentAccount.pin
+  ) {
+    const index = accounts.findIndex(
+      acc => acc.username === currentAccount.username
+    );
+
+    //Delete Account
+    accounts.splice(index, 1);
+
+    //Hide UI
+    containerApp.style.opacity = 0;
+  }
+  inputCloseUsername.value = inputClosePin.value = '';
+  inputClosePin.blur();
+});
+
+let sorted = false;
+btnSort.addEventListener('click', function (e) {
+  e.preventDefault();
+
+  displayMovements(currentAccount.movements, !sorted);
+  sorted = !sorted;
 });
 
 /////////////////////////////////////////////////////////////////////////////
@@ -234,7 +328,7 @@ btnTransfer.addEventListener('click', function (e) {
 //   ['GBP', 'Pound sterling'],
 // ]);
 
-// curencies1.forEach(function (value, key, map``) {
+// const err2 = curencies1.forEach(function (value, key, map) {
 //   console.log(`${key}: ${value}`);
 // })
 
@@ -340,3 +434,136 @@ btnTransfer.addEventListener('click', function (e) {
 //   }
 // };
 // findAccount();
+
+//Inlcude returns a boolean for an checked value exixtence in the equality form
+// console.log(movements.includes(-650));
+
+///////////////////........Some and Every........./////////////////
+// //Some returns a boolean for a condition
+// const anyDeposits = movements.some(mov => mov > 980);
+// console.log(anyDeposits);
+
+//Every returns a boolean if all values in an array satisfy the condition
+// console.log(movements.every(mov => mov > 0));
+// console.log(account4.movements.every(mov => mov > 0));
+
+///////////////////........ Sorting ........./////////////////
+//Strings
+// const owners = ['Vincent', 'Sarah', 'Zach', 'Hellen', 'Mathias', 'Anabel'];
+
+// console.log(owners.sort());
+
+//Numbers => this doesn't give the expected output since it bases on strings
+// console.log(movements);
+
+//return < 0; a, b => keep order
+//return > 0; b, a => switch order
+
+//Ascending
+// movements.sort((a, b) => {
+//   if (a > b) return 1;
+//   if (a < b) return -1;
+// });
+
+// //    OR
+// movements.sort((a, b) => a - b);
+// console.log(movements);
+
+// //Descending
+// movements.sort((a, b) => {
+//   if (a > b) return -1;
+//   if (a < b) return 1;
+// });
+// console.log(movements);
+
+// // OR
+
+// movements.sort((a, b) => b - a);
+// console.log(movements);
+
+///////////////////........ Challenge #4 ........./////////////////
+//Test Data
+
+// const dogs = [
+//   {
+//     weight: 22,
+//     curFood: 250,
+//     owners: ['Alice', 'Bob'],
+//   },
+//   {
+//     weight: 8,
+//     curFood: 200,
+//     owners: ['Matilda'],
+//   },
+//   {
+//     weight: 13,
+//     curFood: 275,
+//     owners: ['Sarah', 'John'],
+//   },
+//   {
+//     weight: 32,
+//     curFood: 340,
+//     owners: ['Micheal'],
+//   },
+// ];
+
+// const pushedDog = dogs.forEach(function (dog) {
+//   const doggy = dog.weight ** 0.75 * 28;
+//   dog.recommendedFood = Math.floor(doggy);
+// });
+// // console.log(dogs);
+// const sarahDog = dogs.find(function (dog) {
+//   if (dog.owners.includes('Sarah')) {
+//     if (dog.weight >= dog.recommendedFood) {
+//       console.log(`Sarah's dog eats too much`);
+//     } else {
+//       // console.log(`Sarah's dog eats little`);
+//     }
+//   }
+// });
+
+// const ownersEatTooMuch = [];
+// const ownersEatTooLittle = [];
+// const ownersRecommendedFood = [];
+
+// dogs.forEach(function (dog) {
+//   if (dog.curFood >= dog.recommendedFood) {
+//     ownersEatTooMuch.push(...dog.owners);
+//   } else {
+//     ownersEatTooLittle.push(...dog.owners);
+//   }
+// });
+// console.log(`Owners that have dogs who eat too much are ${ownersEatTooMuch}`);
+// console.log(
+//   `Owners that have dogs who eat too little are ${ownersEatTooLittle}`
+// );
+
+// // dogs.forEach(dog => (dog.curFood === dog.recommendedFood ? true : false));
+// const exact = dogs.some(function (dog) {
+//   if (dog.curFood === dog.recommendedFood) {
+//     return 'true';
+//   }
+// });
+// console.log(exact);
+
+///////////////////........ Dates ........./////////////////
+const nowA = new Date();
+console.log(now);
+// console.log(new Date(account1.movementsDates[0]));
+
+const future = new Date(2037, 10, 19, 15, 23);
+
+console.log(future);
+console.log(future.getFullYear());
+console.log(future.getMonth());
+console.log(future.getDate());
+console.log(future.getDay());
+console.log(future.getHours());
+console.log(future.getMinutes());
+console.log(future.getSeconds());
+console.log(future.toISOString());
+console.log(Date.now());
+console.log(new Date(1774343069275));
+
+future.setFullYear(2040);
+console.log(future);
