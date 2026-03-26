@@ -340,6 +340,10 @@ btnTransfer.addEventListener('click', function (e) {
 
     //updating UI
     updateUI(currentAccount);
+
+    //Restart timer
+    clearInterval(timer);
+    timer = startLogoutTimer();
   }
 });
 
@@ -384,6 +388,10 @@ btnClose.addEventListener('click', function (e) {
   }
   inputCloseUsername.value = inputClosePin.value = '';
   inputClosePin.blur();
+
+  //Restart timer
+  clearInterval(timer);
+  timer = startLogoutTimer();
 });
 
 let sorted = false;
