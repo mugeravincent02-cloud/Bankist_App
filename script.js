@@ -37,7 +37,7 @@ const account2 = {
     '2020-07-26T12:01:20.0894Z',
   ],
   locale: 'de-DE',
-  currency: 'EURO',
+  currency: 'EUR',
   interestRate: 1.5, //%
   pin: 2222,
 };
@@ -75,7 +75,7 @@ const account4 = {
     '2020-07-26T12:01:20.0894Z',
   ],
   locale: 'de-DE',
-  currency: 'EURO',
+  currency: 'EUR',
   interestRate: 1, //%
   pin: 4444,
 };
@@ -109,6 +109,7 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
+// ..............Intl API .............. //
 const formatMovementDates = function (date, locale) {
   const calcDaysPassed = (date1, date2) =>
     Math.round(Math.abs(date2 - date1) / (1000 * 60 * 60 * 24));
@@ -133,6 +134,13 @@ const formatMovementDates = function (date, locale) {
   return new Intl.DateTimeFormat(locale).format(date);
 };
 
+const currencyFormatter = function (value, locale, currency) {
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: currency,
+  }).format(value);
+};
+
 const displayMovements = function (acc, sort = false) {
   containerMovements.innerHTML = '';
 
@@ -146,6 +154,8 @@ const displayMovements = function (acc, sort = false) {
     const date = new Date(acc.movementsDates[i]);
     const displayDate = formatMovementDates(date, acc.locale);
 
+    const formattedMov = currencyFormatter(mov, acc.locale, acc.currency);
+
     const html = `
       <div class="movements__row">
 
@@ -153,7 +163,7 @@ const displayMovements = function (acc, sort = false) {
       i + 1
     } ${type}</div>
         <div class="movements__date">${displayDate}</div>
-        <div class="movements__value">${mov.toFixed(2)} €</div>
+        <div class="movements__value">${formattedMov} </div>
     `;
     containerMovements.insertAdjacentHTML('afterbegin', html);
   });
@@ -161,7 +171,11 @@ const displayMovements = function (acc, sort = false) {
 
 const calcDisplayBalance = function (acc) {
   acc.balance = acc.movements.reduce((acc, mov) => acc + mov, 0);
-  labelBalance.textContent = `${acc.balance.toFixed(2)} €`;
+  labelBalance.textContent = currencyFormatter(
+    acc.balance,
+    acc.locale,
+    acc.currency
+  );
 };
 
 const calcDisplaySummary = function (acc) {
@@ -169,20 +183,28 @@ const calcDisplaySummary = function (acc) {
     .filter(mov => mov > 0)
     .reduce((acc, mov) => acc + mov, 0);
 
-  labelSumIn.textContent = `${incomes.toFixed(2)} €`;
+  labelSumIn.textContent = currencyFormatter(incomes, acc.locale, acc.currency);
 
   const outs = acc.movements
     .filter(mov => mov < 0)
     .reduce((acc, mov, i, arr) => acc + mov, 0);
 
-  labelSumOut.textContent = `${Math.abs(outs).toFixed(2)} €`;
+  labelSumOut.textContent = currencyFormatter(
+    Math.abs(outs),
+    acc.locale,
+    acc.currency
+  );
 
   const interest = acc.movements
     .filter(mov => mov > 0)
     .map(deposit => (deposit * acc.interestRate) / 100)
     .reduce((acc, int) => acc + int, 0);
 
-  labelSumInterest.textContent = `${interest} €`;
+  labelSumInterest.textContent = currencyFormatter(
+    interest,
+    acc.locale,
+    acc.currency
+  );
 };
 
 // Adding an element in the accounts which is the short form of their names.
@@ -613,7 +635,7 @@ btnSort.addEventListener('click', function (e) {
 
 ///////////////////........ Dates ........./////////////////
 const nowA = new Date();
-console.log(now);
+console.log(nowA);
 // console.log(new Date(account1.movementsDates[0]));
 
 const future = new Date(2037, 10, 19, 15, 23);
