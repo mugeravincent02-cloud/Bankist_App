@@ -234,19 +234,12 @@ const updateUI = function (acc) {
 
 //Logout timer functionality
 const startLogoutTimer = function () {
-  //set time to 5 minutes
-  let time = 10; //for testing
-
-  //call timer every second
-  const timer = setInterval(function () {
+  const tick = function () {
     const min = String(Math.trunc(time / 60)).padStart(2, 0);
     const sec = String(time % 60).padStart(2, 0);
 
     //In each call, print remaining time to UI
     labelTimer.textContent = `${min}: ${sec}`;
-
-    //Keep decreasing time by 1 second
-    time--;
 
     //Stopping timer and logging out user when 0 seconds
     if (time == 0) {
@@ -254,11 +247,20 @@ const startLogoutTimer = function () {
       labelWelcome.textContent = 'Log in to get started';
       containerApp.style.opacity = 0;
     }
-  }, 1000);
+    //Keep decreasing time by 1 second
+    time--;
+  };
+  //set time to 5 minutes
+  let time = 120; //for testing
+
+  //call timer every second
+  tick();
+  const timer = setInterval(tick, 1000);
+  return timer;
 };
 
 // Implementing the login
-let currentAccount;
+let currentAccount, timer;
 btnLogin.addEventListener('click', function (e) {
   //Prevent form from submitting
   e.preventDefault();
@@ -302,7 +304,11 @@ btnLogin.addEventListener('click', function (e) {
 
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
-    startLogoutTimer();
+
+    //Timer rectification on logout
+    if (timer) clearInterval(timer);
+    timer = startLogoutTimer();
+
     //updating user interface
     updateUI(currentAccount);
   }
