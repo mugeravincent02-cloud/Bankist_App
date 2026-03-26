@@ -89,7 +89,7 @@ const labelBalance = document.querySelector('.balance__value');
 const labelSumIn = document.querySelector('.summary__value--in');
 const labelSumOut = document.querySelector('.summary__value--out');
 const labelSumInterest = document.querySelector('.summary__value--interest');
-const labelTimer = document.querySelector('.timmer');
+const labelTimer = document.querySelector('.timer');
 
 const containerApp = document.querySelector('.app');
 const containerMovements = document.querySelector('.movements');
@@ -232,6 +232,31 @@ const updateUI = function (acc) {
   calcDisplaySummary(acc);
 };
 
+//Logout timer functionality
+const startLogoutTimer = function () {
+  //set time to 5 minutes
+  let time = 10; //for testing
+
+  //call timer every second
+  const timer = setInterval(function () {
+    const min = String(Math.trunc(time / 60)).padStart(2, 0);
+    const sec = String(time % 60).padStart(2, 0);
+
+    //In each call, print remaining time to UI
+    labelTimer.textContent = `${min}: ${sec}`;
+
+    //Keep decreasing time by 1 second
+    time--;
+
+    //Stopping timer and logging out user when 0 seconds
+    if (time == 0) {
+      clearInterval(timer);
+      labelWelcome.textContent = 'Log in to get started';
+      containerApp.style.opacity = 0;
+    }
+  }, 1000);
+};
+
 // Implementing the login
 let currentAccount;
 btnLogin.addEventListener('click', function (e) {
@@ -277,6 +302,7 @@ btnLogin.addEventListener('click', function (e) {
 
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
+    startLogoutTimer();
     //updating user interface
     updateUI(currentAccount);
   }
@@ -319,13 +345,15 @@ btnLoan.addEventListener('click', function (e) {
   const amount = Math.floor(inputLoanAmount.value);
 
   if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
-    //Add to movements
-    currentAccount.movements.push(amount);
+    setTimeout(function () {
+      //Add to movements
+      currentAccount.movements.push(amount);
 
-    //Add Loan Date
-    currentAccount.movementsDates.push(new Date().toISOString());
+      //Add Loan Date
+      currentAccount.movementsDates.push(new Date().toISOString());
 
-    updateUI(currentAccount);
+      updateUI(currentAccount);
+    }, 2500);
   }
   inputLoanAmount.value = '';
 });
@@ -634,23 +662,42 @@ btnSort.addEventListener('click', function (e) {
 // console.log(exact);
 
 ///////////////////........ Dates ........./////////////////
-const nowA = new Date();
-console.log(nowA);
-// console.log(new Date(account1.movementsDates[0]));
+// const nowA = new Date();
+// console.log(nowA);
+// // console.log(new Date(account1.movementsDates[0]));
 
-const future = new Date(2037, 10, 19, 15, 23);
+// const future = new Date(2037, 10, 19, 15, 23);
 
-console.log(future);
-console.log(future.getFullYear());
-console.log(future.getMonth());
-console.log(future.getDate());
-console.log(future.getDay());
-console.log(future.getHours());
-console.log(future.getMinutes());
-console.log(future.getSeconds());
-console.log(future.toISOString());
-console.log(Date.now());
-console.log(new Date(1774343069275));
+// console.log(future);
+// console.log(future.getFullYear());
+// console.log(future.getMonth());
+// console.log(future.getDate());
+// console.log(future.getDay());
+// console.log(future.getHours());
+// console.log(future.getMinutes());
+// console.log(future.getSeconds());
+// console.log(future.toISOString());
+// console.log(Date.now());
+// console.log(new Date(1774343069275));
 
-future.setFullYear(2040);
-console.log(future);
+// future.setFullYear(2040);
+// console.log(future);
+
+// ///////////////////........ SetTimeOut ........./////////////////
+// Executes after a defined TimeRanges, eg after 5seconds as below
+
+// const ingredients = ['olives', 'spinach'];
+
+// const pizzaTimer = setTimeout(
+//   (ing1, ing2) => console.log(`Here isyour pizza with ${ing1} and ${ing2}`),
+//   5000,
+//   ...ingredients
+// );
+
+// ///////////////////........ SetInterval ........./////////////////
+// Its a countedown  clock
+
+// setInterval(function () {
+//   const nowC = new Date();
+//   console.log(now);
+// }, 3000);
